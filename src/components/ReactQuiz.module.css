@@ -4,6 +4,7 @@
   gap: 5rem;
   padding: 1rem;
   place-items: center;
+  text-align: center;
 }
 
 .header {
@@ -64,4 +65,14 @@
   justify-content: space-between;
   font-size: 0.8rem;
 
+}
+
+@media (max-width:500px) {
+  .header {
+    flex-direction: column;
+  }
+
+  .question_container {
+    width: auto;
+  }
 }

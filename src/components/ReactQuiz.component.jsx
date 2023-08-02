@@ -8,7 +8,8 @@ const initialState = {
     questions: [],
     status: 'loading',
     index: 0,
-    userAnswer: null
+    userAnswer: null,
+    points: 0,
 }
 
 function reducer(state, action) {
@@ -16,8 +17,12 @@ function reducer(state, action) {
         case 'dataRecieved': return { ...state, questions: action.payload, status: 'Data Ready' }
         case 'dataFailed': return { ...state, status: 'Fetch Failed' }
         case 'gameStart': return { ...state, status: 'Game Started' }
-        case 'userAnswer': return { ...state, userAnswer: action.payload }
-        case 'nextQuestion': return { ...state, index: state.index + 1, userAnswer: null }
+        case 'userAnswer':
+            const question = state.questions.at(state.index)
+            return { ...state, userAnswer: action.payload, points: action.payload === question.correctOption ? state.points + question.points : state.points }
+        case 'nextQuestion':
+            return { ...state, index: state.index + 1, userAnswer: null }
+        case 'restartGame': return { ...state, index: 0, userAnswer: null, status: "Data Ready" }
         default: throw new Error("uknown error")
     }
 }
@@ -25,7 +30,7 @@ function reducer(state, action) {
 function ReactQuiz() {
 
     const [state, dispatch] = useReducer(reducer, initialState)
-    const { questions, status, index, userAnswer } = state
+    const { questions, status, index, userAnswer, points } = state
 
     useEffect(function () {
         fetch('http://localhost:5000/questions').then(res => res.json()).then(data => dispatch({ type: "dataRecieved", payload: data })).catch(() => dispatch({ type: "dataFailed" }))
@@ -37,7 +42,7 @@ function ReactQuiz() {
             {status === "loading" && <LoadingSpinner />}
             {status === "Fetch Failed" && <ErrorBox error={`${status}, sorry for this issue, we are fixing it`} />}
             {status === "Data Ready" && <StartGameScreen dispatch={dispatch} title="Welcome to the React Quiz" description="this is a cool QNA game for react learners" buttonContent="Start Quiz" />}
-            {status === "Game Started" && <QuestionsScreen dispatch={dispatch} userAnswer={userAnswer} totalQuestions={questions} index={index} quizQuestion={questions.at(index)} />}
+            {status === "Game Started" && <QuestionsScreen points={points} dispatch={dispatch} userAnswer={userAnswer} totalQuestions={questions} index={index} quizQuestion={questions.at(index)} />}
         </div>
     )
 }
@@ -59,18 +64,18 @@ function StartGameScreen({ title, description, buttonContent, dispatch }) {
     )
 }
 
-function QuestionsScreen({ dispatch, quizQuestion, userAnswer, totalQuestions, index }) {
+function QuestionsScreen({ dispatch, quizQuestion, userAnswer, totalQuestions, index, points }) {
     const { options, question, correctOption } = quizQuestion
     return (
         <div className={Styles.question_container}>
             <h2>{question}</h2>
-            <UserProgress index={index} totalQuestions={totalQuestions} />
-            <Options userAnswer={userAnswer} dispatch={dispatch} options={options} correctAnswer={correctOption} />
+            <UserProgress points={points} index={index} totalQuestions={totalQuestions} />
+            <Options index={index} totalQuestions={totalQuestions} userAnswer={userAnswer} dispatch={dispatch} options={options} correctAnswer={correctOption} />
         </div>
     )
 }
 
-function Options({ dispatch, options, correctAnswer, userAnswer }) {
+function Options({ dispatch, options, correctAnswer, userAnswer, index, totalQuestions }) {
     const hasAnswered = userAnswer !== null
     return (
         <div>
@@ -80,20 +85,24 @@ function Options({ dispatch, options, correctAnswer, userAnswer }) {
                 }
             </div>
             {
-                hasAnswered && <button onClick={() => dispatch({ type: "nextQuestion" })} style={{ float: "right", borderRadius: "10px" }} className={Styles.button}>Next</button>
+                hasAnswered && index !== totalQuestions.length - 1 && <button onClick={() => dispatch({ type: "nextQuestion" })} style={{ float: "right", borderRadius: "10px" }} className={Styles.button}>Next</button>
+            }
+            {
+                hasAnswered && index === totalQuestions.length - 1 && <button onClick={() => dispatch({ type: "restartGame" })} style={{ float: "right", borderRadius: "10px" }} className={Styles.button}>Restart Game</button>
             }
         </div>
 
     )
 }
 
-function UserProgress({ totalQuestions, index }) {
+function UserProgress({ totalQuestions, index, points }) {
+    const totalPoints = totalQuestions.reduce((accumulator, currentValue) => accumulator + currentValue.points, 0)
     return (
         <div>
             <progress style={{ width: "100%" }} value={index} max={totalQuestions.length}></progress>
             <div className={Styles.user_progress_container}>
                 <span>{`${index} ${index > 1 ? "questions" : "question"} / ${totalQuestions.length} questions`}</span>
-                <span>X points / X points</span>
+                <span>{points} points / {totalPoints} points</span>
             </div>
         </div>
     )

@@ -1,0 +1,67 @@
+.quiz_app {
+  color: white;
+  display: grid;
+  gap: 5rem;
+  padding: 1rem;
+  place-items: center;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.button {
+  padding: 1rem;
+  border-radius: 50px;
+  background-color: hsl(1, 100%, 100%);
+  border: none;
+  cursor: pointer;
+}
+
+
+.on_hover:hover {
+  background-color: hsl(140, 50%, 60%);
+  color: white;
+}
+
+.game_options .selected_answer {
+  background-color: gray;
+}
+
+.answer_wrong {
+  background-color: red;
+  color: white;
+}
+
+.answer_correct {
+  color: white;
+  background-color: green;
+}
+
+.game_start_screen {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+
+.game_options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1rem;
+}
+
+.question_container {
+  width: 400px;
+  text-align: center;
+}
+
+.user_progress_container {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+
+}

@@ -45,7 +45,7 @@ function ReactQuiz() {
     const { rightAnswers, questions, status, index, userAnswer, points, remainingTime } = state
 
     useEffect(function () {
-        fetch('http://localhost:5000/questions').then(res => res.json()).then(data => dispatch({ type: "dataRecieved", payload: data })).catch(() => dispatch({ type: "dataFailed" }))
+        fetch('https://api.jsonbin.io/v3/qs/64cbecedb89b1e2299cac48a').then(res => res.json()).then(data => dispatch({ type: "dataRecieved", payload: data })).catch(() => dispatch({ type: "dataFailed" }))
     }, [])
 
     return (
